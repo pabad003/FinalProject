@@ -1,0 +1,17 @@
+.message {
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    background-color: #e0e0e0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.message .message-text {
+    flex-grow: 1;
+}
+
+.message button {
+    margin-left: 10px;
+}

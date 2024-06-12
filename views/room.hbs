@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/public/css/style.css">
+    <style>
+        body {
+            background-color: #f0f2f5;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 90vw;
+            height: 90vh;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        .header {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #74f120;
+            font-size: 3em;
+            margin-bottom: 20px;
+        }
+
+        #messageSearch,
+        #userSearch {
+            width: 250px;
+            padding: 12px;
+            font-size: 1.1em;
+            background-repeat: no-repeat;
+            background-position: 10px center;
+            background-size: 20px 20px;
+            padding-left: 40px;
+            border-radius: 20px;
+            border: 1px solid #ccc;
+            margin-bottom: 10px;
+        }
+
+        #messages {
+            width: 100%;
+            height: 60vh;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            border-radius: 25px;
+        }
+
+        .message {
+            background-color: #eaf6ff;
+            border-radius: 20px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s, transform 0.3s;
+            position: relative; 
+        }
+
+        .message:hover {
+            background-color: #cfe2f3;
+        }
+
+        .message-text {
+            color: #333;
+            font-size: 1.1em;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .message-time {
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+            font-size: 0.8em;
+            color: #777;
+            display: block;
+        }
+
+        .user-name {
+            color: #91e32c; 
+            font-weight: bold;
+        }
+
+
+        .message-actions {
+            display: flex;
+            align-items: center;
+        }
+
+        .edit-button,
+        .delete-button {
+            background-color: transparent;
+            border: none;
+            color: #74f120;
+            cursor: pointer;
+            font-size: 0.9em;
+            margin-left: 2px; 
+        }
+
+        .edit-input {
+            width: 80%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 25px;
+            font-size: 1em;
+        }
+
+        .error-message,
+        .error-list {
+            color: red;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .error-list {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .logout-container {
+            position: absolute;
+            bottom: 20px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .logout-btn {
+            color: #000;
+            background-color: #fff;
+            border: 1px solid #000;
+            border-radius: 25px;
+            padding: 10px 20px;
+            text-decoration: none;
+            font-size: 1.0em;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background-color: #eee;
+            transform: translateY(-2px);
+        }
+
+        #messageForm {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+            justify-content: center;
+            align-items: center;
+            margin-top: 10px;
+            border-radius: 25px;
+        }
+
+        #message {
+            width: 70%;
+            padding: 12px;
+            font-size: 1.1em;
+            border-radius: 25px; 
+            border: 1px solid #ccc;
+        }
+
+        #message::placeholder {
+            border-radius: 25px; 
+        }
+
+        #messageForm button {
+            padding: 12px 20px;
+            font-size: 1.1em;
+            border-radius: 25px;
+            border: none;
+            background-color: #000;
+            color: #fff;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        #messageForm button:hover {
+            background-color: #333;
+            transform: translateY(-2px);
+        }
+    </style>
+    <title>Chatroom</title>
+</head>
+<body>
+    <div class="container">
+        <h1>{{ roomName }}</h1>
+
+        <input type="text" id="messageSearch" placeholder="Search messages by content">
+        <input type="text" id="userSearch" placeholder="Filter by user">
+
+        <div id="messages">
+        </div>
+
+        <form id="messageForm">
+            <input type="text" id="message" placeholder="Enter message" required>
+            <button type="submit">Send</button>
+        </form>
+
+        <p>
+            <a href="/homepage" class="logout-btn">Back to Home</a>
+        </p>
+    </div>
+
+    <script>
+        let autoRefreshInterval;
+
+        document.getElementById('messageForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const messageInput = document.getElementById('message');
+            const message = messageInput.value.trim();
+
+            if (!message) {
+                alert("Please enter a message");
+                return;
+            }
+
+            const roomId = '{{ roomId }}';
+            fetch(`/${roomId}/messages`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ text: message })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                } else {
+                    addMessageToUI(data);
+                }
+            });
+
+            messageInput.value = '';
+        });
+
+        function enableEditMessage(messageId, currentText) {
+            clearInterval(autoRefreshInterval);
+
+            const messageDiv = document.getElementById(`message-${messageId}`);
+            const messageTextDiv = messageDiv.querySelector('.message-text');
+            const editButton = messageDiv.querySelector('.edit-button');
+            const deleteButton = messageDiv.querySelector('.delete-button');
+
+            messageTextDiv.innerHTML = `<input type="text" class="edit-input" value="${currentText}">`;
+            editButton.textContent = "✅";
+            editButton.onclick = () => saveEdit(messageId);
+            deleteButton.style.display = 'none';
+        }
+
+        function saveEdit(messageId) {
+            const messageDiv = document.getElementById(`message-${messageId}`);
+            const editInput = messageDiv.querySelector('.edit-input').value.trim();
+
+            if (!editInput) {
+                alert("Please enter a message");
+                return;
+            }
+
+            const roomId = '{{ roomId }}';
+            fetch(`/${roomId}/messages/${messageId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ text: editInput })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                } else {
+                    updateMessageInUI(data);
+                    autoRefreshInterval = setInterval(refreshMessages, 1000);
+                }
+            });
+        }
+
+        function deleteMessage(messageId) {
+            const roomId = '{{ roomId }}';
+            fetch(`/${roomId}/messages/${messageId}`, {
+                method: 'DELETE'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                } else {
+                    removeMessageFromUI(messageId);
+                }
+            });
+        }
+
+        function addMessageToUI(message) {
+            const messageDiv = document.createElement('div');
+            messageDiv.id = `message-${message._id}`;
+            messageDiv.classList.add('message');
+            messageDiv.innerHTML = `
+                <div class="user-info">
+                    <span class="user-name">${message.nickname}</span>
+                    <div class="message-content">
+                        <span class="message-text">${message.text}</span>
+                    </div>
+                    <div class="message-time">
+                        <span>${new Date(message.datetime).toLocaleString()}</span>
+                    </div>
+                </div>
+                <div class="message-actions">
+                    ${(message.nickname === '{{user}}' || '{{isAdmin}}' === 'true') ? `
+                        <button class="edit-button" onclick="enableEditMessage('${message._id}', '${message.text}')">
+                            ✏️
+                        </button>
+                        <button class="delete-button" onclick="deleteMessage('${message._id}')">
+                            🗑️
+                        </button>
+                    ` : ''}
+                </div>
+            `;
+            document.getElementById('messages').appendChild(messageDiv);
+        }
+
+        function updateMessageInUI(message) {
+            const messageDiv = document.getElementById(`message-${message._id}`);
+            const messageTextDiv = messageDiv.querySelector('.message-text');
+            const editButton = messageDiv.querySelector('.edit-button');
+            const deleteButton = messageDiv.querySelector('.delete-button');
+
+            messageTextDiv.innerHTML = `${message.nickname}: ${message.text} (${new Date(message.datetime).toLocaleString()})`;
+            editButton.textContent = 'Edit';
+            editButton.onclick = () => enableEditMessage(message._id, message.text);
+            deleteButton.style.display = 'inline';
+        }
+
+        function removeMessageFromUI(messageId) {
+            const messageDiv = document.getElementById(`message-${messageId}`);
+            messageDiv.parentNode.removeChild(messageDiv);
+        }
+
+        function refreshMessages() {
+            const roomId = '{{ roomId }}';
+            fetch(`/${roomId}/messages`)
+                .then(response => response.json())
+                .then(messages => {
+                    const messagesDiv = document.getElementById('messages');
+                    messagesDiv.innerHTML = '';
+                    messages.forEach(message => addMessageToUI(message));
+                });
+        }
+
+        autoRefreshInterval = setInterval(refreshMessages, 1000);
+
+        function pauseAutoRefresh() {
+            clearInterval(autoRefreshInterval);
+        }
+
+        function resumeAutoRefresh() {
+            autoRefreshInterval = setInterval(refreshMessages, 1000);
+        }
+
+        function searchMessages() {
+            pauseAutoRefresh();
+
+            const searchQuery = document.getElementById('messageSearch').value.toLowerCase();
+            const userQuery = document.getElementById('userSearch').value.toLowerCase();
+
+            const messages = document.querySelectorAll('#messages .message');
+
+            messages.forEach(message => {
+                const messageText = message.querySelector('.message-text').textContent.toLowerCase();
+                const nickname = message.querySelector('.user-name').textContent.toLowerCase();
+
+
+                const matchesSearch = messageText.includes(searchQuery);
+                const matchesUser = userQuery ? nickname.includes(userQuery) : true;
+
+                if (matchesSearch && matchesUser) {
+                    message.style.display = '';
+                } else {
+                    message.style.display = 'none';
+                }
+            });
+        }
+
+        document.getElementById('messageSearch').addEventListener('input', searchMessages);
+        document.getElementById('userSearch').addEventListener('input', searchMessages);
+
+        document.getElementById('messageSearch').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && this.value === '') {
+                resumeAutoRefresh();
+            }
+        });
+
+        document.getElementById('userSearch').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && this.value === '') {
+                resumeAutoRefresh();
+            }
+        });
+    </script>
+</body>
+</html>

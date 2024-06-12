@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/public/css/style.css">
+    <style>
+        body {
+            background-color: #f0f2f5;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh; 
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 90vw; 
+            height: 90vh; 
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .header {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+
+        .header h1 {
+            color: #74f120;
+            font-size: 3em;
+            margin-bottom: 20px;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: row; 
+            align-items: center;
+            justify-content: center;
+            gap: 10px; 
+        }
+
+        .options a {
+            margin: 0;
+            padding: 15px 30px;
+            background-color: #74f120;
+            color: #fff;
+            border-radius: 25px;
+            text-align: center;
+            text-decoration: none;
+            font-size: 1.2em;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        .options a:hover {
+            background-color: #a9f676;
+            transform: translateY(-2px);
+        }
+    </style>
+    <title>CS110 Chatroom</title>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>CS110 Chatroom</h1>
+        </div>
+
+        <div class="options">
+            {{#if user}}
+                <p>Welcome, {{user}}! <a class="btn" href="/logout">Logout</a></p>
+            {{else}}
+                <a href="/login" class="btn">Login</a>
+                <a href="/signup" class="btn">Sign Up</a>
+            {{/if}}
+        </div>
+    </div>
+</body>
+</html>

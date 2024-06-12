@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/public/css/style.css">
+    <style>
+        body {
+            background-color: #f0f2f5;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh; 
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 90vw;
+            height: 90vh; 
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative; 
+        }
+
+        .header {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #74f120;
+            font-size: 3em;
+            margin-bottom: 20px;
+        }
+
+        .welcome-message {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .delete-button {
+            background-color: transparent;
+            border: none;
+            color: #74f120;
+            cursor: pointer;
+            font-size: 0.9em;
+            margin-left: 2px;
+        }
+        
+        .options {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: auto; 
+        }
+
+        .options a {
+            margin: 0;
+            padding: 15px 30px;
+            background-color: #fff; 
+            color: #000; 
+            border-radius: 25px;
+            text-align: center;
+            text-decoration: none;
+            font-size: 1.2em;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        .options a:hover {
+            background-color: #eee; 
+            transform: translateY(-2px);
+        }
+
+        .create-room-form {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px; 
+        }
+
+        .create-room-form input[type="text"] {
+            flex: 1; 
+            padding: 10px; 
+        }
+
+        .create-room-form button {
+            padding: 10px 20px; 
+            white-space: nowrap; 
+            margin-left: 10px; 
+        }
+
+        #chatSearch {
+            width: 250px; 
+            padding: 12px; 
+            font-size: 1.1em; 
+            background-image: url('https://image.flaticon.com/icons/png/512/56/56760.png'); 
+            background-repeat: no-repeat;
+            background-position: 10px center; 
+            background-size: 20px 20px;
+            padding-left: 40px; 
+            border-radius: 20px; 
+            border: 1px solid #ccc; 
+        }
+
+        #chatList {
+            text-align: center; 
+            width: 100%; 
+            height: 40vh;
+            overflow-y: auto; 
+            display: flex;
+            flex-direction: column;
+            align-items: center; 
+        }
+
+        #chatList li {
+            margin-bottom: 10px; 
+            width: 100%; 
+            text-align: center; 
+            color: #74f120; 
+        }
+
+        #chatList li a {
+            display: inline-block;
+            width: 100%; 
+            color: #74f120;
+        }
+
+        .error-message, .error-list {
+            color: red;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .error-list {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .logout-container {
+            position: absolute;
+            bottom: 20px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .logout-btn {
+            color: #000; 
+            border: 1px solid #000; 
+            border-radius: 25px; 
+            padding: 10px 20px;
+            text-decoration: none; 
+            font-size: 1.0em; 
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background-color: #eee;
+            transform: translateY(-2px);
+        }
+
+    </style>
+    <title>Home</title>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Home</h1>
+            {{#if user}}
+                <p class="welcome-message">Welcome, {{user}}!</p>
+            {{else}}
+                <div class="options">
+                    <a href="/login" class="btn">Login</a>
+                    <a href="/signup" class="btn">Sign Up</a>
+                </div>
+            {{/if}}
+        </div>
+
+        <input type="text" id="chatSearch" placeholder="🔍 Search chats by name">
+
+        <ul id="chatList">
+            {{#each rooms}}
+            <li>
+                <a href="/{{this.id}}">{{this.name}}</a>
+                {{#if ../isAdmin}}
+                    <button class="delete-button" onclick="deleteMessage('${message._id}')">
+                            🗑️
+                        </button>
+                {{/if}}
+            </li>
+            {{/each}}
+        </ul>
+
+        {{#if user}}
+        <form class="create-room-form" action="/create" method="POST">
+            <input type="text" name="roomName" placeholder="🏷️ Enter room name" required>
+            <button type="submit">Create Room</button>
+        </form>
+        {{/if}}
+
+        {{#if errorMessage}}
+        <p class="error-message">{{errorMessage}}</p>
+        {{/if}}
+        <div class="logout-container">
+            <a href="/logout" class="logout-btn">Logout</a>
+        </div>
+    </div>
+
+    <script>
+        function deleteRoom(roomId) {
+            if (confirm('Are you sure you want to delete this chat room?')) {
+                fetch(`/room/${roomId}`, {
+                    method: 'DELETE'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        alert(data.error);
+                    } else {
+                        location.reload();
+                    }
+                });
+            }
+        }
+
+        document.getElementById('chatSearch').addEventListener('input', function() {
+            const searchQuery = this.value.toLowerCase();
+            const chats = document.querySelectorAll('#chatList li');
+
+            chats.forEach(chat => {
+                const chatName = chat.querySelector('a').textContent.toLowerCase();
+                if (chatName.includes(searchQuery)) {
+                    chat.style.display = '';
+                } else {
+                    chat.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

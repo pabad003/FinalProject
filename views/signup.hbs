@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/public/css/style.css">
+    <style>
+        body {
+            background-color: #f0f2f5;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh; 
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 90vw; 
+            height: 90vh; 
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .header {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #a9f676;
+            font-size: 3em;
+            margin-bottom: 20px;
+        }
+
+        .form-container {
+            width: 100%;
+            max-width: 400px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-container input,
+        .form-container button,
+        .back-btn {
+            width: 100%;
+            max-width: 350px; 
+            padding: 15px;
+            border-radius: 5px;
+            font-size: 1.2em;
+            box-sizing: border-box; 
+        }
+
+        .form-container input {
+            border: 1px solid #ccc;
+        }
+
+        .form-container button {
+            margin-top: 20px;
+            background-color: #a9f676; 
+            color: #fff;
+            border: none; 
+            border-radius: 25px;
+            font-size: 1.2em;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        .form-container button:hover {
+            background-color: #65ea8b; 
+            transform: translateY(-2px);
+        }
+
+        .back-btn {
+            margin-top: 20px;
+            background-color: #fff;
+            color: #000; 
+            border: 2px solid #000; 
+            border-radius: 25px;
+            text-align: center;
+            text-decoration: none;
+            font-size: 1.2em;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+            display: inline-block; 
+        }
+
+        .back-btn:hover {
+            background-color: #f0f2f5; 
+            transform: translateY(-2px);
+        }
+
+        .error-message, .error-list {
+            color: red;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .error-list {
+            list-style-type: none;
+            padding: 0;
+        }
+    </style>
+    <title>Sign Up</title>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Sign Up</h1>
+        </div>
+
+        {{#if errorMessage}}
+        <p class="error-message">{{errorMessage}}</p>
+        {{/if}}
+
+        {{#if errors}}
+        <ul class="error-list">
+            {{#each errors}}
+            <li>{{msg}}</li>
+            {{/each}}
+        </ul>
+        {{/if}}
+
+        <div class="form-container">
+            <form action="/signup" method="POST">
+                <input type="texto" name="username" placeholder="👤 Enter username" required>
+                <input type="email" name="email" placeholder="📧 Enter email" required>
+                <input type="password" name="password" placeholder="🔒 Enter password" required>
+                <input type="password" name="confirmPassword" placeholder="🔒 Confirm password" required>
+                <button type="submit">Sign Up</button>
+            </form>
+        </div>
+
+        <a href="/" class="back-btn">Back to User Identification</a>
+    </div>
+</body>
+</html>
